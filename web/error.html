@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Lisandro Ybarra</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Ubuntu Mono font -->
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ubuntu-bg: #2C001E;
+            --ubuntu-text: #FFFFFF;
+            --ubuntu-orange: #E95420;
+            --ubuntu-purple: #772953;
+        }
+
+        body {
+            background-color: var(--ubuntu-bg);
+            color: var(--ubuntu-text);
+            font-family: 'Ubuntu Mono', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .terminal-container {
+            background-color: var(--ubuntu-bg);
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background-color: var(--ubuntu-purple);
+            padding: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-right: 15px;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .terminal-button.close { background-color: #ff5f57; }
+        .terminal-button.minimize { background-color: #ffbd2e; }
+        .terminal-button.maximize { background-color: #28c941; }
+
+        .terminal-title {
+            color: var(--ubuntu-text);
+            font-size: 14px;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .terminal-content {
+            padding: 20px;
+        }
+
+        .error-prompt {
+            color: var(--ubuntu-orange);
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            color: var(--ubuntu-text);
+            margin-bottom: 20px;
+        }
+
+        .error-code {
+            color: #ff5f57;
+            margin-bottom: 10px;
+        }
+
+        .suggestion {
+            color: var(--ubuntu-text);
+            opacity: 0.8;
+        }
+
+        .back-link {
+            color: var(--ubuntu-orange);
+            text-decoration: none;
+            margin-top: 20px;
+            display: inline-block;
+        }
+
+        .back-link:hover {
+            color: var(--ubuntu-text);
+            text-decoration: underline;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background-color: var(--ubuntu-text);
+            animation: blink 1s infinite;
+            margin-left: 5px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .terminal-container {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button maximize"></span>
+            </div>
+            <div class="terminal-title">Error - Terminal</div>
+        </div>
+        <div class="terminal-content">
+            <div class="error-prompt">visitor@lybarra-web:~$ status</div>
+            <div class="error-code">Error 404: Page Not Found</div>
+            <div class="error-message">
+                bash: The requested resource could not be found on this server.
+            </div>
+            <div class="suggestion">
+                Suggested commands:<br>
+                - Check the URL for typos<br>
+                - Return to the homepage<br>
+                - Try a different path
+            </div>
+            <a href="/" class="back-link">cd /home<span class="cursor"></span></a>
+        </div>
+    </div>
+</body>
+</html> 

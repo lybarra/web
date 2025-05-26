@@ -1,0 +1,64 @@
+name: Deploy to S3
+
+on:
+  #push:
+  #  branches:
+  #    - main  # or your default branch
+  workflow_dispatch:  # Allows manual trigger
+
+# These permissions are needed to interact with GitHub's OIDC Token endpoint
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production  # Define this environment in your GitHub repository settings
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '18'
+      #     cache: 'npm'
+
+      # - name: Install dependencies
+      #   run: npm ci
+
+      # - name: Build project
+      #   run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync web/ s3://${{ secrets.S3_BUCKET }} \
+            --delete \
+            --cache-control "max-age=86400" \
+            --exclude "*.html" \
+            --exclude "*.json"
+
+      - name: Deploy HTML and JSON files with different cache settings
+        run: |
+          aws s3 sync web/ s3://${{ secrets.S3_BUCKET }} \
+            --delete \
+            --cache-control "no-cache" \
+            --include "*.html" \
+            --include "*.json"
+
+      - name: Invalidate CloudFront distribution
+        env: 
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+        if: ${{ env.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"

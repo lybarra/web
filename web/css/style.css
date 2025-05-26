@@ -1,0 +1,155 @@
+:root {
+    --ubuntu-bg: #2C001E;
+    --ubuntu-text: #FFFFFF;
+    --ubuntu-orange: #E95420;
+    --ubuntu-purple: #772953;
+}
+
+body {
+    background-color: var(--ubuntu-bg);
+    color: var(--ubuntu-text);
+    font-family: 'Ubuntu Mono', monospace;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.terminal-container {
+    background-color: var(--ubuntu-bg);
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    height: 100vh;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.terminal-header {
+    background-color: var(--ubuntu-purple);
+    padding: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.terminal-buttons {
+    display: flex;
+    gap: 8px;
+    margin-right: 15px;
+}
+
+.terminal-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.terminal-button.close { background-color: #ff5f57; }
+.terminal-button.minimize { background-color: #ffbd2e; }
+.terminal-button.maximize { background-color: #28c941; }
+
+.terminal-title {
+    color: var(--ubuntu-text);
+    font-size: 14px;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.terminal-output {
+    padding: 15px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.terminal-input-area {
+    display: flex;
+    padding: 10px 15px;
+    background-color: var(--ubuntu-bg);
+    border-top: 1px solid var(--ubuntu-purple);
+}
+
+.prompt {
+    color: var(--ubuntu-orange);
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+.terminal-input {
+    background: transparent;
+    border: none;
+    color: var(--ubuntu-text);
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 16px;
+    width: 100%;
+    outline: none;
+}
+
+/* Terminal Footer */
+.terminal-footer {
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    border-top: 1px solid var(--ubuntu-purple);
+    background-color: var(--ubuntu-bg);
+}
+
+.footer-icon {
+    color: var(--ubuntu-text);
+    font-size: 20px;
+    transition: color 0.3s ease;
+}
+
+.footer-icon:hover {
+    color: var(--ubuntu-orange);
+}
+
+/* Output styling */
+.command-output {
+    margin: 10px 0;
+    line-height: 1.4;
+}
+
+.section-title {
+    color: var(--ubuntu-orange);
+    margin: 15px 0 5px;
+}
+
+.skill-item {
+    padding-left: 20px;
+    margin: 5px 0;
+}
+
+/* Cursor effect */
+.cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    background-color: var(--ubuntu-text);
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .terminal-container {
+        height: calc(100vh - 20px);
+    }
+
+    .terminal-output {
+        height: calc(100vh - 120px);
+    }
+
+    .prompt, .terminal-input {
+        font-size: 14px;
+    }
+} 
