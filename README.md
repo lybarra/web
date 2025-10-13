@@ -1,60 +1,62 @@
-# Ubuntu Terminal Portfolio
+# Ubuntu Terminal Website
 
-A unique personal portfolio website styled after the Ubuntu terminal interface, hosted on AWS using infrastructure as code.
+A unique personal website styled after the Ubuntu terminal interface with an integrated contact form, hosted on AWS using infrastructure as code.
 
 ## Project Overview
 
-This project consists of three main components:
-1. A static website with an Ubuntu terminal-inspired interface
-2. Infrastructure as code (Terraform) for AWS deployment
-3. GitHub Actions workflow for automated deployment
+This project consists of:
+1. **Static website** - Ubuntu terminal-inspired interface with interactive commands
+2. **Contact form** - Serverless contact form with AWS Lambda, API Gateway, and SES
+3. **Bot protection** - reCAPTCHA v3 for spam prevention
+4. **Infrastructure as Code** - Terraform for AWS deployment
+5. **CI/CD** - GitHub Actions workflow for automated deployment
 
 ## Repository Structure
 
 ```
 .
-├── .github/                      # GitHub specific configurations
-│   └── workflows/               # GitHub Actions workflows
-│       └── deploy-s3.yml       # Deployment workflow
+├── .github/
+│   └── workflows/
+│       └── deploy-s3.yml           # Deployment workflow
 │
-├── web/                         # Web application files
-│   ├── index.html              # Main HTML file
-│   ├── error.html              # Error page for CloudFront
+├── web/                            # Web application
+│   ├── index.html                  # Main page
+│   ├── error.html                  # CloudFront error page
 │   ├── css/
-│   │   └── style.css          # Custom styles
+│   │   └── style.css              # Terminal styling
 │   └── js/
-│       └── terminal.js        # Terminal functionality
+│       ├── terminal.js            # Terminal commands
+│       └── contact.js             # Contact form handler
 │
 ├── infrastructure/
-│   ├── backend/           # Terraform Backend Resources
+│   ├── iac-backend/               # Terraform state backend
 │   │   ├── main.tf
-│   │   ├── variables.tf
-│   │   ├── outputs.tf
-│   │   └── providers.tf
+│   │   ├── template.auto.tfvars   # Configuration template
+│   │   └── secrets.auto.tfvars    # Your secrets (gitignored)
 │   │
-│   └── web-hosting/       # Web Hosting Resources
-│       ├── main.tf
-│       ├── variables.tf
-│       ├── outputs.tf
-│       └── providers.tf
+│   └── web/                       # Web infrastructure
+│       ├── main.tf                # S3, CloudFront, Route53
+│       ├── _contact-form.tf       # Contact form Lambda & API Gateway
+│       ├── template.auto.tfvars   # Configuration template
+│       ├── secrets.auto.tfvars    # Your secrets (gitignored)
+│       └── lambdas/
+│           └── web-contact-form/
+│               ├── contact-form.py
+│               └── requirements.txt
 │
-├── .gitignore                  # Git ignore rules
-└── README.md                   # Project documentation
+├── .gitignore
+└── README.md
 ```
 
-## Web Application
+## Features
 
-### Features
-
-- Ubuntu terminal-inspired design
+### Terminal Interface
+- Ubuntu terminal-inspired design with authentic styling
 - Interactive command-line interface
+- Command history navigation (arrow keys)
 - Responsive design for all devices
-- Command history navigation
-- Real terminal-like experience
-- Social media integration (GitHub, LinkedIn)
 
-### Available Commands
-
+**Available Commands:**
 - `help` - Show available commands
 - `clear` - Clear the terminal
 - `whoami` - Display name and title
@@ -64,129 +66,235 @@ This project consists of three main components:
 - `cat certifications.md` - Display certifications
 - `cat education.txt` - Display education history
 
+### Contact Form
+- **Serverless architecture** - AWS Lambda + API Gateway
+- **Email notifications** - AWS SES sends to multiple recipients
+- **Bot protection** - reCAPTCHA v3 (invisible, no user interaction)
+- **Form validation** - Client-side and server-side
+- **Automatic responses** - Confirmation emails to visitors (when SES is out of sandbox)
+
 ### Technical Stack
 
-- HTML5
-- CSS3
-- JavaScript (ES6+)
+**Frontend:**
+- HTML5, CSS3, JavaScript (ES6+)
 - Bootstrap 5
-- Ubuntu Mono font (Google Fonts)
-- Font Awesome icons
+- Google reCAPTCHA v3
+
+**Backend:**
+- AWS Lambda (Python 3.12)
+- AWS API Gateway v2 (HTTP API)
+- AWS SES (Simple Email Service)
+- AWS S3 + CloudFront
+- AWS Route53 + ACM
+
+**Infrastructure:**
+- Terraform
+- GitHub Actions (CI/CD)
 
 ## Infrastructure
 
-### AWS Resources
+### AWS Services
 
-The website is hosted on AWS using the following services:
-- S3 bucket for static website hosting
-- CloudFront for content delivery
-- Route53 for DNS management
-- ACM for SSL/TLS certificate
-- IAM for resource permissions
+**Core Infrastructure:**
+- **S3** - Static website hosting and Terraform state storage
+- **CloudFront** - Global CDN with HTTPS
+- **Route53** - DNS management
+- **ACM** - SSL/TLS certificates
 
-### Infrastructure Organization
+**Contact Form:**
+- **Lambda** - Serverless function (Python 3.12)
+- **API Gateway v2** - HTTP API endpoint
+- **SES** - Email sending with domain verification (DKIM, SPF)
+- **IAM** - Roles and permissions
 
-The infrastructure is organized by region and resource type:
-
-#### Backend Resources
-- S3 bucket for Terraform state storage
-
-#### Web Hosting Resources
-- S3 bucket for static website files
-- CloudFront distribution
-- ACM certificate for HTTPS
-- Route53 DNS records
-- IAM roles and policies
-
-## GitHub Actions
-
-### Deployment Workflow
-
-The project uses GitHub Actions for automated deployment to AWS. The workflow is triggered on:
-- Push to main branch (not yet)
-- Manual workflow dispatch
-
-### Required Secrets
-
-The following secrets must be configured in GitHub repository settings:
-
-1. `AWS_ROLE_ARN`
-   - Description: AWS IAM Role for the action
-
-2. `S3_BUCKET`
-   - Description: S3 bucket name to deploy the assets
-
-3. `AWS_REGION`
-   - Description: AWS region where resources are deployed
-   - Example value: us-east-1
-
-### Workflow Features
-
-- Automated deployment to S3
-- CloudFront cache invalidation
-- Error handling and notifications
-- Secure secret management
-- Deployment status checks
+**CI/CD:**
+- **GitHub Actions** - Automated deployment
+- **OIDC** - Keyless AWS authentication
 
 ## Setup and Deployment
 
-### Web Application
-1. Navigate to the `web` directory
-2. Open `index.html` in a web browser for local testing
-3. Modify content in `terminal.js` as needed
+### Prerequisites
 
-### Infrastructure Deployment
+1. **AWS Account** with appropriate permissions
+2. **AWS CLI** configured with a profile
+3. **Terraform** >= 1.1.0
+4. **Domain** registered (for custom domain)
+5. **Google reCAPTCHA** account (for bot protection)
 
-1. Deploy Backend Infrastructure:
-   ```bash
-   cd infrastructure/us-east-1/backend
-   terraform init
-   terraform plan
-   terraform apply
-   ```
+### Step 1: Configure Infrastructure
 
-2. Deploy Web Hosting Resources:
-   ```bash
-   cd ../web-hosting
-   terraform init
-   terraform plan
-   terraform apply
-   ```
+Copy the template files and configure your values:
 
-### GitHub Actions Setup
+```bash
+# Backend configuration
+cd infrastructure/iac-backend
+cp template.auto.tfvars secrets.auto.tfvars
+```
 
-1. Configure required secrets in GitHub repository settings:
-   - Go to Settings > Secrets and variables > Actions
-   - Add the three required secrets listed above
+Edit `secrets.auto.tfvars`:
+```hcl
+project_name        = "my-web"
+project_region      = "us-east-1"
+project_profile     = "default"  # Your AWS CLI profile
+```
 
-2. The workflow will automatically run on push to main branch (NOT YET)
-3. Manual deployment can be triggered from the Actions tab
+```bash
+# Web infrastructure configuration  
+cd ../web
+cp template.auto.tfvars secrets.auto.tfvars
+```
 
-## Development
+Edit `secrets.auto.tfvars`:
+```hcl
+project_name        = "my-web"
+project_environment = "production"
+project_region      = "us-east-1"
+project_profile     = "default"
 
-### Web Content
-To modify the website content, edit the `data` object in `terminal.js`. The styling can be customized in `style.css`.
+# GitHub OIDC for CI/CD
+oidc_subjects       = ["my-org/my-repo:*"]
 
-### Infrastructure
-To modify the AWS infrastructure:
-1. Backend changes:
-   - Update files in `infrastructure/us-east-1/backend/`
-   - Apply changes using Terraform
-2. Web hosting changes:
-   - Update files in `infrastructure/us-east-1/web-hosting/`
-   - Apply changes using Terraform
+# Domain configuration
+cloudfront_aliases  = ["example.com", "*.example.com"]
+web_domain          = "example.com"
+api_gateway_domain_name = "api.example.com"
 
-### Important Notes
-- Always deploy backend infrastructure first
-- Use consistent naming conventions across resources
-- Review security configurations before deployment
-- Test website in multiple browsers after deployment
-- Ensure GitHub Actions secrets are properly configured
-- Keep AWS IAM credentials secure
+# Contact form emails
+web_contact_form_email         = "info@example.com"
+web_contact_form_forward_email = "personal@gmail.com"  # Optional
 
-## Browser Compatibility
+# reCAPTCHA (see Step 3)
+recaptcha_secret_key = "YOUR_SECRET_KEY"
+```
 
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+### Step 2: Deploy Infrastructure
+
+```bash
+# 1. Deploy backend (Terraform state storage)
+cd infrastructure/iac-backend
+terraform init
+terraform apply
+
+# 2. Deploy web infrastructure
+cd ../web
+terraform init
+terraform apply
+```
+
+After deployment, you'll receive outputs with:
+- CloudFront distribution URL
+- API Gateway endpoint
+- SES verification status
+
+### Step 3: Configure reCAPTCHA (Bot Protection)
+
+The contact form uses Google reCAPTCHA v3 to prevent spam. It's invisible to users and runs automatically in the background.
+
+#### Get reCAPTCHA Keys
+
+1. Go to https://www.google.com/recaptcha/admin/create
+2. Create a new site:
+   - **Label:** your-website-name
+   - **Type:** reCAPTCHA v3
+   - **Domains:** your-domain.com, localhost
+3. Get your **Site Key** (public) and **Secret Key** (private)
+
+#### Configure Frontend
+
+Edit `web/index.html` (line 97):
+```html
+<script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
+```
+
+Edit `web/js/contact.js` (line 10):
+```javascript
+const RECAPTCHA_SITE_KEY = 'YOUR_SITE_KEY';
+```
+
+#### Configure Backend
+
+Add to `infrastructure/web/secrets.auto.tfvars`:
+```hcl
+recaptcha_secret_key = "YOUR_SECRET_KEY"
+```
+
+Re-deploy:
+```bash
+cd infrastructure/web
+terraform apply
+```
+
+**Why reCAPTCHA?**
+- Invisible to users (no checkboxes or challenges)
+- Scores each submission 0.0-1.0 (bot to human)
+- Blocks automated spam submissions
+- Free for up to 1M requests/month
+
+### Step 4: Verify SES Email
+
+AWS SES starts in sandbox mode (can only send to verified addresses). To send to anyone:
+
+1. Verify your domain in AWS SES Console
+2. Request production access (usually approved in 24-48 hours)
+
+Or, for testing, verify individual email addresses in SES Console.
+
+### Step 5: Deploy Website
+
+Upload your website files to S3 by triggering the github workflow.
+
+## GitHub Actions (CI/CD)
+
+### Automated Deployment
+
+The workflow deploys on:
+- Manual trigger (Actions tab)
+- Push to main branch (optional)
+
+### Required Secrets
+
+Configure in GitHub Settings > Secrets:
+
+1. `AWS_ROLE_ARN` - IAM role for deployment (created by Terraform)
+2. `S3_BUCKET` - Website bucket name
+3. `AWS_REGION` - AWS region (e.g., us-east-1)
+
+Terraform outputs these values after deployment.
+
+## Monitoring and Maintenance
+
+### View Contact Form Submissions
+
+Check CloudWatch Logs:
+```bash
+aws logs tail /aws/lambda/web-contact-form --follow --profile your-profile
+```
+
+### View reCAPTCHA Analytics
+
+- Go to https://www.google.com/recaptcha/admin
+- View score distribution and request volume
+
+### SES Email Sending
+
+Monitor in AWS SES Console:
+- Bounce and complaint rates
+- Sending statistics
+- Reputation dashboard
+
+## Troubleshooting
+
+### Contact form returns 500 error
+- Check CloudWatch Logs for Lambda errors
+- Verify SES email/domain is verified
+- Check reCAPTCHA keys are correct
+
+### Emails not arriving
+- **Sandbox mode**: Verify recipient email in SES Console
+- **Production**: Check SES bounce/complaint rates
+- Verify DNS records (DKIM, SPF) are set
+
+### reCAPTCHA verification fails
+- Verify Site Key matches in HTML and JS
+- Check Secret Key in Terraform
+- Ensure domain is registered in reCAPTCHA console
