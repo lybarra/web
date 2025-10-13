@@ -35,11 +35,8 @@ class Terminal {
     }
 
     displayWelcomeMessage() {
-        const welcomeMessage = `Welcome to Lisandro Ybarra's terminal portfolio!
+        const welcomeMessage = `Welcome to Lisandro Ybarra's terminal!
 Type 'help' to see available commands.
-
-visitor@lybarra-web:~$ whoami
-Lisandro Ybarra - devOps cloud engineer +3 years exp
 `;
         this.appendOutput(welcomeMessage);
     }
