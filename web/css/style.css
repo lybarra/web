@@ -135,6 +135,162 @@ body {
     50% { opacity: 0; }
 }
 
+/* Contact Form Styling */
+.contact-form-wrapper {
+    margin-top: 30px;
+    padding: 0 20px 40px 20px;
+}
+
+.contact-form-header {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: var(--ubuntu-orange);
+    letter-spacing: 0.5px;
+}
+
+.terminal-form {
+    max-width: 800px;
+}
+
+.form-group-terminal {
+    margin-bottom: 12px;
+}
+
+.terminal-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.terminal-form-input {
+    flex: 1;
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid var(--ubuntu-purple);
+    color: var(--ubuntu-text);
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    padding: 8px 0;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.terminal-form-input:focus {
+    border-bottom-color: var(--ubuntu-orange);
+}
+
+.terminal-form-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Fix autofill background color */
+.terminal-form-input:-webkit-autofill,
+.terminal-form-input:-webkit-autofill:hover,
+.terminal-form-input:-webkit-autofill:focus,
+.terminal-form-input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--ubuntu-bg) inset !important;
+    -webkit-text-fill-color: var(--ubuntu-text) !important;
+    caret-color: var(--ubuntu-text);
+}
+
+.terminal-textarea:-webkit-autofill,
+.terminal-textarea:-webkit-autofill:hover,
+.terminal-textarea:-webkit-autofill:focus,
+.terminal-textarea:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px rgba(119, 41, 83, 0.1) inset !important;
+    -webkit-text-fill-color: var(--ubuntu-text) !important;
+}
+
+.terminal-textarea {
+    resize: vertical;
+    min-height: 80px;
+    width: 100%;
+    margin-top: 5px;
+    padding: 8px;
+    border: 1px solid var(--ubuntu-purple);
+    border-radius: 3px;
+    background-color: rgba(119, 41, 83, 0.1);
+}
+
+.terminal-textarea:focus {
+    border-color: var(--ubuntu-orange);
+    background-color: rgba(119, 41, 83, 0.2);
+}
+
+.form-submit-area {
+    margin-top: 15px;
+}
+
+.terminal-button-submit {
+    background-color: transparent;
+    border: 1px solid var(--ubuntu-orange);
+    border-radius: 3px;
+    color: var(--ubuntu-text);
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.terminal-button-submit:hover {
+    background-color: var(--ubuntu-orange);
+    color: var(--ubuntu-bg);
+}
+
+.terminal-button-submit:active {
+    transform: scale(0.98);
+}
+
+.terminal-button-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Form Status Messages */
+.form-status {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: none;
+}
+
+.form-status.success {
+    display: block;
+    background-color: rgba(40, 201, 65, 0.2);
+    border: 1px solid #28c941;
+    color: #28c941;
+}
+
+.form-status.error {
+    display: block;
+    background-color: rgba(255, 95, 87, 0.2);
+    border: 1px solid #ff5f57;
+    color: #ff5f57;
+}
+
+.form-status.info {
+    display: block;
+    background-color: rgba(233, 84, 32, 0.2);
+    border: 1px solid var(--ubuntu-orange);
+    color: var(--ubuntu-orange);
+}
+
+/* Loading animation */
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+.loading::after {
+    content: '.';
+    animation: dots 1.5s infinite;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
     body {
@@ -146,10 +302,32 @@ body {
     }
 
     .terminal-output {
-        height: calc(100vh - 120px);
+        height: calc(100vh - 180px);
     }
 
     .prompt, .terminal-input {
         font-size: 14px;
+    }
+
+    .contact-form-wrapper {
+        padding: 20px 10px 30px 10px;
+    }
+
+    .terminal-form-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    .terminal-button-submit {
+        width: 100%;
+    }
+
+    .terminal-label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .terminal-form-input {
+        width: 100%;
     }
 } 

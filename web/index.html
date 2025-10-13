@@ -47,9 +47,55 @@
         </div>
     </div>
 
+    <!-- Contact Form Section -->
+    <div class="contact-form-wrapper">
+        <div class="contact-form-header">
+            Contact
+        </div>
+        
+        <form id="contactForm" class="terminal-form">
+            <div class="form-group-terminal">
+                <label class="terminal-label">
+                    <span class="prompt">name:</span>
+                    <input type="text" id="name" name="name" class="terminal-form-input" required 
+                           placeholder="Your name">
+                </label>
+            </div>
+
+            <div class="form-group-terminal">
+                <label class="terminal-label">
+                    <span class="prompt">email:</span>
+                    <input type="email" id="email" name="email" class="terminal-form-input" required 
+                           placeholder="your@email.com">
+                </label>
+            </div>
+
+            <div class="form-group-terminal">
+                <label class="terminal-label">
+                    <span class="prompt">message:</span>
+                    <textarea id="message" name="message" class="terminal-form-input terminal-textarea" 
+                              rows="4" required placeholder="Your message..."></textarea>
+                </label>
+            </div>
+
+            <div class="form-submit-area">
+                <button type="submit" class="terminal-button-submit" id="submitBtn">
+                    <span class="prompt">$</span> send_message
+                </button>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="formStatus" class="form-status"></div>
+        </form>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <!-- Google reCAPTCHA v3 -->
+    <!-- Replace YOUR_RECAPTCHA_SITE_KEY with your actual site key from Google reCAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdZL-krAAAAADGppH8g95lo9TVUXCY2nG8yr5pm"></script>
     <script src="js/terminal.js"></script>
+    <script src="js/contact.js"></script>
 </body>
 </html> 
