@@ -3,10 +3,10 @@
  * Submits form data to AWS API Gateway endpoint
  */
 
-// API Gateway endpoint - update after deployment
+// API Gateway endpoint
 const API_ENDPOINT = 'https://api.lisandroybarra.com/contact';
 
-// reCAPTCHA Site Key (public key - safe to hardcode)
+// reCAPTCHA Site Key (public key)
 const RECAPTCHA_SITE_KEY = '6LdZL-krAAAAADGppH8g95lo9TVUXCY2nG8yr5pm';
 
 class ContactForm {

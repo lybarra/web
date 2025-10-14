@@ -80,6 +80,11 @@ module "web_contact_form_lambda" {
     CONTACT_EMAIL         = var.web_contact_form_email
     FORWARD_EMAIL         = var.web_contact_form_forward_email
     RECAPTCHA_SECRET_KEY  = var.recaptcha_secret_key
+    WEBSITE_URL           = "https://${var.web_domain}"
+    LINKEDIN_URL          = var.linkedin_url
+    GITHUB_URL            = var.github_url
+    OWNER_NAME            = var.owner_name
+    OWNER_TITLE           = var.owner_title
   }
 
   # Logs

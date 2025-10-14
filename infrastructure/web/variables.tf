@@ -23,6 +23,30 @@ variable "recaptcha_secret_key" {
   sensitive   = true
 }
 
+variable "linkedin_url" {
+  description = "LinkedIn profile URL"
+  type        = string
+  default     = "https://www.linkedin.com/in/yourprofile/"
+}
+
+variable "github_url" {
+  description = "GitHub profile URL"
+  type        = string
+  default     = "https://github.com/yourusername"
+}
+
+variable "owner_name" {
+  description = "Name of the website owner"
+  type        = string
+  default     = "Your Name"
+}
+
+variable "owner_title" {
+  description = "Professional title of the website owner"
+  type        = string
+  default     = "DevOps Engineer"
+}
+
 variable "cloudfront_aliases" {
   description = "The aliases for the cloudfront distribution"
   type        = list(string)

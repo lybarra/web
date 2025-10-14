@@ -125,9 +125,14 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
-        # Obtener email de contacto desde variables de entorno
-        contact_email = os.environ.get('CONTACT_EMAIL', 'info@lisandroybarra.com')
+        # Obtener configuración desde variables de entorno
+        contact_email = os.environ.get('CONTACT_EMAIL', 'info@yourdomain.com')
         forward_email = os.environ.get('FORWARD_EMAIL', '')
+        website_url = os.environ.get('WEBSITE_URL', 'https://yourdomain.com')
+        linkedin_url = os.environ.get('LINKEDIN_URL', 'https://www.linkedin.com/in/yourprofile/')
+        github_url = os.environ.get('GITHUB_URL', 'https://github.com/yourusername')
+        owner_name = os.environ.get('OWNER_NAME', 'Your Name')
+        owner_title = os.environ.get('OWNER_TITLE', 'DevOps Engineer')
         
         # Preparar lista de destinatarios para el email de notificación
         recipient_emails = [contact_email]
@@ -136,14 +141,15 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Enviar email al administrador (y forward si está configurado)
         admin_email_sent = send_admin_notification(
-            contact_email, recipient_emails, name, email, message
+            contact_email, recipient_emails, name, email, message, website_url
         )
         
         # Enviar email de confirmación al usuario (solo si SES no está en sandbox)
         confirmation_sent = True  # Assume success for now
         try:
             confirmation_sent = send_user_confirmation(
-                contact_email, name, email, message
+                contact_email, name, email, message, website_url, linkedin_url, 
+                github_url, owner_name, owner_title
             )
         except ClientError as e:
             # Si SES está en sandbox mode, el email de confirmación fallará
@@ -212,7 +218,7 @@ def is_valid_email(email: str) -> bool:
     return re.match(pattern, email) is not None
 
 def send_admin_notification(sender_email: str, recipient_emails: list, name: str, 
-                           email: str, message: str) -> bool:
+                           email: str, message: str, website_url: str) -> bool:
     """
     Envía email de notificación al administrador (y destinatarios adicionales)
     
@@ -222,6 +228,7 @@ def send_admin_notification(sender_email: str, recipient_emails: list, name: str
         name: Nombre del usuario
         email: Email del usuario
         message: Mensaje del usuario
+        website_url: URL del sitio web
         
     Returns:
         True si se envió exitosamente, False en caso contrario
@@ -233,17 +240,18 @@ def send_admin_notification(sender_email: str, recipient_emails: list, name: str
         <html>
         <head>
             <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .header {{ background-color: #FFB3BA; padding: 20px; color: white; text-align: center; }}
-                .content {{ padding: 20px; }}
-                .field {{ margin-bottom: 15px; }}
-                .field strong {{ color: #FFB3BA; }}
-                .footer {{ background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666; }}
+                body {{ font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .header {{ background-color: #1976D2; background: linear-gradient(135deg, #1976D2 0%, #2196F3 100%); padding: 20px; text-align: center; }}
+                .header h2 {{ color: #ffffff; margin: 0; }}
+                .content {{ padding: 20px; background-color: #fff; }}
+                .field {{ margin-bottom: 15px; padding: 10px; border-left: 3px solid #2196F3; background-color: #f8f9fa; }}
+                .field strong {{ color: #1976D2; }}
+                .footer {{ background-color: #263238; padding: 15px; text-align: center; font-size: 12px; color: #cfd8dc; }}
             </style>
         </head>
         <body>
             <div class="header">
-                <h2>🐦 Nueva consulta recibida</h2>
+                <h2>📧 Nueva consulta recibida</h2>
             </div>
             <div class="content">
                 <div class="field">
@@ -258,7 +266,7 @@ def send_admin_notification(sender_email: str, recipient_emails: list, name: str
                 </div>
             </div>
             <div class="footer">
-                <p>Enviado desde el formulario de contacto de lisandroybarra.com</p>
+                <p>Enviado desde el formulario de contacto de {website_url.replace('https://', '').replace('http://', '')}</p>
             </div>
         </body>
         </html>
@@ -294,7 +302,8 @@ def send_admin_notification(sender_email: str, recipient_emails: list, name: str
         return False
 
 def send_user_confirmation(admin_email: str, name: str, user_email: str, 
-                          message: str) -> bool:
+                          message: str, website_url: str, linkedin_url: str,
+                          github_url: str, owner_name: str, owner_title: str) -> bool:
     """
     Envía email de confirmación al usuario
     
@@ -303,27 +312,38 @@ def send_user_confirmation(admin_email: str, name: str, user_email: str,
         name: Nombre del usuario
         user_email: Email del usuario
         message: Mensaje del usuario
+        website_url: URL del sitio web
+        linkedin_url: URL de LinkedIn
+        github_url: URL de GitHub
+        owner_name: Nombre del propietario
+        owner_title: Título del propietario
         
     Returns:
         True si se envió exitosamente, False en caso contrario
     """
     try:
-        subject = 'Gracias por tu consulta - Lisandro Ybarra'
+        subject = f'Gracias por tu consulta - {owner_name}'
         
         html_body = f"""
         <html>
         <head>
             <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .header {{ background-color: #FFB3BA; padding: 20px; color: white; text-align: center; }}
-                .content {{ padding: 20px; }}
-                .message-box {{ background-color: #f9f9f9; padding: 15px; border-left: 4px solid #FFB3BA; margin: 20px 0; }}
-                .footer {{ background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666; }}
+                body {{ font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .header {{ background-color: #1976D2; background: linear-gradient(135deg, #1976D2 0%, #2196F3 100%); padding: 20px; text-align: center; }}
+                .header h2 {{ color: #ffffff; margin: 0; }}
+                .content {{ padding: 20px; background-color: #fff; }}
+                .message-box {{ background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin: 20px 0; border-radius: 4px; }}
+                .footer {{ background-color: #263238; padding: 15px; text-align: center; font-size: 12px; color: #cfd8dc; }}
+                .footer p {{ margin: 5px 0; }}
+                a {{ color: #2196F3; text-decoration: none; }}
+                a:hover {{ text-decoration: underline; }}
+                ul {{ padding-left: 20px; }}
+                li {{ margin: 8px 0; }}
             </style>
         </head>
         <body>
             <div class="header">
-                <h2>🐦 ¡Gracias por contactarnos!</h2>
+                <h2>💬 ¡Gracias por contactarme!</h2>
             </div>
             <div class="content">
                 <p>Hola <strong>{name}</strong>,</p>
@@ -336,14 +356,14 @@ def send_user_confirmation(admin_email: str, name: str, user_email: str,
                 
                 <p>Mientras tanto, puedes:</p>
                 <ul>
-                    <li>Visitar mi <a href="https://lisandroybarra.com">sitio web</a></li>
-                    <li>Conectar en <a href="https://www.linkedin.com/in/lisandro-ybarra/">LinkedIn</a></li>
-                    <li>Ver mi <a href="https://github.com/lybarra">GitHub</a></li>
+                    <li>Visitar mi <a href="{website_url}">sitio web</a></li>
+                    <li>Conectar en <a href="{linkedin_url}">LinkedIn</a></li>
+                    <li>Ver mi <a href="{github_url}">GitHub</a></li>
                 </ul>
             </div>
             <div class="footer">
-                <p>Saludos,<br>Lisandro Ybarra</p>
-                <p>DevOps Engineer</p>
+                <p>Saludos,<br><strong>{owner_name}</strong></p>
+                <p>{owner_title}</p>
             </div>
         </body>
         </html>
@@ -360,13 +380,13 @@ def send_user_confirmation(admin_email: str, name: str, user_email: str,
         {message}
         
         Mientras tanto, puedes:
-        - Visitar mi sitio web: https://lisandroybarra.com
-        - Conectar en LinkedIn: https://www.linkedin.com/in/lisandro-ybarra/
-        - Ver mi GitHub: https://github.com/lybarra
+        - Visitar mi sitio web: {website_url}
+        - Conectar en LinkedIn: {linkedin_url}
+        - Ver mi GitHub: {github_url}
         
         Saludos,
-        Lisandro Ybarra
-        DevOps Engineer
+        {owner_name}
+        {owner_title}
         """
         
         response = ses.send_email(
