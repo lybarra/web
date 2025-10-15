@@ -36,7 +36,10 @@ This project consists of:
 │   │
 │   └── web/                       # Web infrastructure
 │       ├── main.tf                # S3, CloudFront, Route53
-│       ├── _contact-form.tf       # Contact form Lambda & API Gateway
+│       ├── _contact-form.tf       # Contact form (Lambda, API Gateway, SES)
+│       ├── _waf.tf                # AWS WAF (rate limiting, security rules)
+│       ├── variables.tf           # Configuration variables
+│       ├── outputs.tf             # Terraform outputs
 │       ├── template.auto.tfvars   # Configuration template
 │       ├── secrets.auto.tfvars    # Your secrets (gitignored)
 │       └── lambdas/
@@ -68,8 +71,9 @@ This project consists of:
 
 ### Contact Form
 - **Serverless architecture** - AWS Lambda + API Gateway
+- **Multi-layer security** - WAF rate limiting, CORS restrictions, Lambda concurrency limits
+- **Bot protection** - reCAPTCHA v3 with backend verification
 - **Email notifications** - AWS SES sends to multiple recipients
-- **Bot protection** - reCAPTCHA v3 (invisible, no user interaction)
 - **Form validation** - Client-side and server-side
 - **Automatic responses** - Confirmation emails to visitors (when SES is out of sandbox)
 
@@ -102,8 +106,9 @@ This project consists of:
 - **ACM** - SSL/TLS certificates
 
 **Contact Form:**
-- **Lambda** - Serverless function (Python 3.12)
-- **API Gateway v2** - HTTP API endpoint
+- **Lambda** - Serverless function (Python 3.12) with reserved concurrency
+- **API Gateway v2** - HTTP API endpoint with throttling
+- **WAF** - Web Application Firewall with rate limiting and managed rules
 - **SES** - Email sending with domain verification (DKIM, SPF)
 - **IAM** - Roles and permissions
 
@@ -165,6 +170,14 @@ web_contact_form_forward_email = "personal@gmail.com"  # Optional
 
 # reCAPTCHA (see Step 3)
 recaptcha_secret_key = "YOUR_SECRET_KEY"
+
+# Security settings (optional - defaults provided)
+# enable_waf                  = false  # Set to true to enable WAF (~$11/month)
+# api_throttle_burst_limit    = 10
+# api_throttle_rate_limit     = 5
+# lambda_reserved_concurrency = 5
+# waf_rate_limit_general      = 100   # Only if enable_waf = true
+# waf_rate_limit_post         = 10    # Only if enable_waf = true
 ```
 
 ### Step 2: Deploy Infrastructure
@@ -298,3 +311,171 @@ Monitor in AWS SES Console:
 - Verify Site Key matches in HTML and JS
 - Check Secret Key in Terraform
 - Ensure domain is registered in reCAPTCHA console
+
+## Security
+
+The contact form API is protected by multiple security layers to prevent email flooding, DDoS attacks, and abuse.
+
+### Security Architecture
+
+**Multi-Layer Protection:**
+
+1. **CORS Restriction** - Only allows requests from your domain (not `*`)
+2. **AWS WAF** *(optional, disabled by default)* - Rate limiting, SQL injection/XSS protection, bot blocking
+3. **API Gateway Throttling** - 10 concurrent requests, 5 requests/second
+4. **Lambda Concurrency** - Max 5 simultaneous executions (cost protection)
+5. **reCAPTCHA v3** - Backend token verification (score > 0.5)
+6. **Input Validation** - Email format, length limits, field validation
+
+> **💡 Note:** AWS WAF is **disabled by default** to avoid the ~$11/month additional cost. The other security layers (API Gateway throttling, Lambda concurrency, reCAPTCHA, CORS) still provide strong protection. To enable WAF, set `enable_waf = true` in your `secrets.auto.tfvars`.
+
+### Key Protection Features
+
+| Attack Type | Protection Layer | Status |
+|------------|------------------|--------|
+| Direct API flooding (bypassing frontend) | API Gateway throttling + Lambda concurrency | ✅ Always active |
+| Direct API flooding (bypassing frontend) | WAF blocks after 10 POST requests / 5 min per IP | ⚡ Optional (enable_waf) |
+| Distributed attacks (multiple IPs) | API Gateway throttling + Lambda concurrency limits | ✅ Always active |
+| Bot/crawler abuse | reCAPTCHA v3 scoring + validation | ✅ Always active |
+| Bot/crawler abuse | WAF user agent blocking | ⚡ Optional (enable_waf) |
+| Malicious payloads (SQL, XSS) | AWS WAF Managed Rules (Core Rule Set) | ⚡ Optional (enable_waf) |
+| Cost explosion from attacks | Lambda reserved concurrency (5) prevents runaway costs | ✅ Always active |
+| Unauthorized domain access | CORS restricted to your domain only | ✅ Always active |
+
+### Security Configuration
+
+All security settings are configurable in `infrastructure/web/secrets.auto.tfvars`:
+
+```hcl
+# Enable WAF Protection (optional - adds ~$11/month)
+enable_waf = false  # Set to true to enable WAF
+
+# API Gateway Throttling (always active)
+api_throttle_burst_limit    = 10   # Max concurrent requests
+api_throttle_rate_limit     = 5    # Requests per second
+
+# Lambda Protection (always active)
+lambda_reserved_concurrency = 5    # Max concurrent executions
+
+# WAF Rate Limiting (only if enable_waf = true)
+waf_rate_limit_general      = 100  # Max requests per IP / 5 minutes
+waf_rate_limit_post         = 10   # Max POST requests per IP / 5 minutes
+```
+
+**Adjust based on your traffic:**
+- **Low traffic** (< 100 submissions/month): Keep WAF disabled, `api_throttle_rate_limit = 3`
+- **Medium traffic** (100-1000 submissions/month): Default settings (WAF optional)
+- **High traffic** (> 1000 submissions/month): Enable WAF, increase limits: `waf_rate_limit_post = 20`, `api_throttle_burst_limit = 20`
+
+### Testing Security
+
+**Test rate limiting:**
+```bash
+# Send 15 rapid requests (should block after 10)
+for i in {1..15}; do
+  curl -X POST https://api.yourdomain.com/contact \
+    -H "Content-Type: application/json" \
+    -d '{"name":"Test '$i'","email":"test@example.com","message":"Testing"}' &
+done
+```
+**Expected:** First 10 succeed, requests 11+ get HTTP 429 (Rate Limit Exceeded)
+
+**Test reCAPTCHA validation:**
+```bash
+curl -X POST https://api.yourdomain.com/contact \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@example.com","message":"Test"}'
+```
+**Expected:** HTTP 400 - reCAPTCHA verification failed
+
+### Monitoring
+
+**CloudWatch Resources:**
+- **WAF Logs:** `/aws/wafv2/contact-form-api` (7-day retention)
+- **Lambda Logs:** `/aws/lambda/web-contact-form`
+- **API Gateway Metrics:** View throttled requests, 4xx/5xx errors
+
+**View WAF blocked requests (if WAF enabled):**
+```bash
+# AWS Console → WAF & Shield → Web ACLs → contact-form-api-waf
+# View "Sampled requests" tab to see blocked IPs
+```
+
+**Note:** WAF logs and monitoring are only available when `enable_waf = true`
+
+### Cost Impact
+
+**Base Security (WAF disabled - default):**
+| Service | Monthly Cost |
+|---------|--------------|
+| API Gateway (5k requests) | ~$5 |
+| Lambda (moderate usage) | ~$0.20 |
+| CloudWatch Logs | ~$0.50 |
+| **Total** | **~$6/month** |
+
+**Enhanced Security (WAF enabled - optional):**
+| Service | Monthly Cost |
+|---------|--------------|
+| AWS WAF (WebACL + 5 Rules) | ~$11 |
+| API Gateway (5k requests) | ~$5 |
+| Lambda (moderate usage) | ~$0.20 |
+| CloudWatch Logs (WAF + Lambda) | ~$1 |
+| **Total** | **~$17-20/month** |
+
+Set `enable_waf = true` in `secrets.auto.tfvars` to enable enterprise-grade WAF protection.
+
+### Emergency Response
+
+**If email flooding detected:**
+
+1. **Enable WAF (if not already enabled):**
+   Edit `infrastructure/web/secrets.auto.tfvars`:
+   ```hcl
+   enable_waf = true  # Enable WAF protection
+   ```
+   Apply: `terraform apply`
+
+2. **Check WAF Dashboard (if WAF enabled):**
+   - AWS Console → WAF & Shield → Web ACLs → `contact-form-api-waf`
+   - View blocked IPs and request patterns
+
+3. **Review CloudWatch Logs:**
+   ```bash
+   # Lambda logs (always available)
+   aws logs tail /aws/lambda/web-contact-form --follow --profile your-profile
+   
+   # WAF logs (only if WAF enabled)
+   aws logs filter-log-events \
+     --log-group-name /aws/wafv2/contact-form-api \
+     --filter-pattern "BLOCK" \
+     --profile your-profile
+   ```
+
+4. **Temporary Fix - Reduce Rate Limits:**
+   Edit `infrastructure/web/secrets.auto.tfvars`:
+   ```hcl
+   api_throttle_rate_limit = 2     # More restrictive (always active)
+   waf_rate_limit_post = 3         # More restrictive (only if WAF enabled)
+   ```
+   Apply: `terraform apply`
+
+5. **Block Specific IPs (if WAF enabled):**
+   - AWS Console → WAF & Shield → IP Sets
+   - Create IP set with attacker IPs
+   - Add blocking rule to WAF WebACL
+
+### Protection Verification
+
+**Before deployment:** Vulnerable to unlimited API calls bypassing frontend
+
+**After deployment (base security):**
+- ✅ API Gateway throttles to 5 requests/second (burst: 10)
+- ✅ Lambda processes max 5 requests simultaneously
+- ✅ reCAPTCHA validates all requests on backend
+- ✅ CORS prevents unauthorized domains
+
+**After deployment (with WAF enabled - optional):**
+- ✅ **All base security features above, plus:**
+- ✅ WAF blocks after 10 POST requests per IP in 5 minutes
+- ✅ WAF managed rules block SQL injection, XSS attacks
+- ✅ WAF blocks suspicious user agents (bots, crawlers)
