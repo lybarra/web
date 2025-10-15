@@ -1,3 +1,52 @@
+variable "api_gateway_domain_name" {
+  description = "The domain name for the API Gateway"
+  type        = string
+  default     = "example.com"
+}
+
+variable "web_contact_form_email" {
+  description = "The primary email address for the web contact form"
+  type        = string
+  default     = "info@example.com"
+}
+
+variable "web_contact_form_forward_email" {
+  description = "Additional email address to forward contact form messages (optional)"
+  type        = string
+  default     = ""
+}
+
+variable "recaptcha_secret_key" {
+  description = "Google reCAPTCHA v3 secret key"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "linkedin_url" {
+  description = "LinkedIn profile URL"
+  type        = string
+  default     = "https://www.linkedin.com/in/yourprofile/"
+}
+
+variable "github_url" {
+  description = "GitHub profile URL"
+  type        = string
+  default     = "https://github.com/yourusername"
+}
+
+variable "owner_name" {
+  description = "Name of the website owner"
+  type        = string
+  default     = "Your Name"
+}
+
+variable "owner_title" {
+  description = "Professional title of the website owner"
+  type        = string
+  default     = "DevOps Engineer"
+}
+
 variable "cloudfront_aliases" {
   description = "The aliases for the cloudfront distribution"
   type        = list(string)
