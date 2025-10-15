@@ -224,33 +224,40 @@ resource "aws_wafv2_web_acl" "contact_form_api_waf" {
     }
   }
 
-  # Rule 6: Geo-blocking (optional - customize based on your needs)
-  # Example: Only allow specific countries if needed
-  # Commented out by default - uncomment and customize if needed
-  # rule {
-  #   name     = "geo-blocking"
-  #   priority = 6
-  #
-  #   action {
-  #     block {}
-  #   }
-  #
-  #   statement {
-  #     not_statement {
-  #       statement {
-  #         geo_match_statement {
-  #           country_codes = ["US", "CA", "GB", "AR", "MX", "ES"] # Allowed countries
-  #         }
-  #       }
-  #     }
-  #   }
-  #
-  #   visibility_config {
-  #     cloudwatch_metrics_enabled = true
-  #     metric_name                = "GeoBlocking"
-  #     sampled_requests_enabled   = true
-  #   }
-  # }
+  # Rule 6: Geo-blocking (optional - enabled via variable)
+  # Blocks traffic from countries not in the allowed list
+  dynamic "rule" {
+    for_each = var.waf_enable_geo_blocking ? [1] : []
+    
+    content {
+      name     = "geo-blocking"
+      priority = 6
+
+      action {
+        block {
+          custom_response {
+            response_code = 403
+          }
+        }
+      }
+
+      statement {
+        not_statement {
+          statement {
+            geo_match_statement {
+              country_codes = var.waf_allowed_countries
+            }
+          }
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "GeoBlocking"
+        sampled_requests_enabled   = true
+      }
+    }
+  }
 
   # Custom response bodies
   custom_response_body {
