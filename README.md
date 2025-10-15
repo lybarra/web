@@ -178,6 +178,8 @@ recaptcha_secret_key = "YOUR_SECRET_KEY"
 # lambda_reserved_concurrency = 5
 # waf_rate_limit_general      = 100   # Only if enable_waf = true
 # waf_rate_limit_post         = 10    # Only if enable_waf = true
+# waf_enable_geo_blocking     = false # Only if enable_waf = true
+# waf_allowed_countries       = ["US", "CA", "GB", "AR", "MX", "ES"]
 ```
 
 ### Step 2: Deploy Infrastructure
@@ -360,6 +362,10 @@ lambda_reserved_concurrency = 5    # Max concurrent executions
 # WAF Rate Limiting (only if enable_waf = true)
 waf_rate_limit_general      = 100  # Max requests per IP / 5 minutes
 waf_rate_limit_post         = 10   # Max POST requests per IP / 5 minutes
+
+# WAF Geo-blocking (only if enable_waf = true)
+waf_enable_geo_blocking     = false  # Block traffic from non-allowed countries
+waf_allowed_countries       = ["US", "CA", "GB", "AR", "MX", "ES"]  # Allowed country codes
 ```
 
 **Adjust based on your traffic:**
