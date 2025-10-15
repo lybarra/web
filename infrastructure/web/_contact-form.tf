@@ -57,6 +57,10 @@ module "web_contact_form_lambda" {
   publish       = true
   timeout       = 60
 
+  # Reserved concurrency to limit execution and control costs
+  # This prevents runaway executions and limits concurrent invocations
+  reserved_concurrent_executions = var.lambda_reserved_concurrency
+
   replace_security_groups_on_destroy = true # ease deletion of security groups
 
   # Package
@@ -148,7 +152,7 @@ module "api_gateway_contact_form" {
   create_domain_records = true
   create_certificate    = true
 
-  # CORS configuration
+  # CORS configuration - restricted to specific domain for security
   cors_configuration = {
     allow_headers = [
       "content-type",
@@ -157,8 +161,13 @@ module "api_gateway_contact_form" {
       "x-api-key",
       "x-amz-security-token"
     ]
-    allow_methods = ["GET", "OPTIONS", "POST"]
-    allow_origins = ["*"]
+    allow_methods = ["POST", "OPTIONS"]
+    # Allow both root domain and www subdomain
+    allow_origins = [
+      "https://${var.web_domain}",
+      "https://www.${var.web_domain}"
+    ]
+    max_age = 300
   }
 
   # Routes and integrations
@@ -175,6 +184,12 @@ module "api_gateway_contact_form" {
   # Stage configuration
   stage_name        = "prod"
   stage_description = "Production stage for contact form API"
+
+  # Throttling settings to prevent abuse
+  stage_default_route_settings = {
+    throttle_burst_limit = var.api_throttle_burst_limit  # Maximum concurrent requests
+    throttle_rate_limit  = var.api_throttle_rate_limit   # Requests per second
+  }
 
   # Access logs
   stage_access_log_settings = {

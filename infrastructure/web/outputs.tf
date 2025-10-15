@@ -42,3 +42,47 @@ output "ses_dkim_tokens" {
   value       = aws_ses_domain_dkim.ses_domain_dkim.dkim_tokens
   sensitive   = true
 }
+
+################################################################################
+# Security Outputs
+################################################################################
+output "waf_enabled" {
+  description = "Whether WAF protection is enabled"
+  value       = var.enable_waf
+}
+
+output "api_gateway_waf_web_acl_id" {
+  description = "The ID of the WAF WebACL protecting the API Gateway (null if WAF disabled)"
+  value       = var.enable_waf ? aws_wafv2_web_acl.contact_form_api_waf[0].id : null
+}
+
+output "api_gateway_waf_web_acl_arn" {
+  description = "The ARN of the WAF WebACL protecting the API Gateway (null if WAF disabled)"
+  value       = var.enable_waf ? aws_wafv2_web_acl.contact_form_api_waf[0].arn : null
+}
+
+output "waf_cloudwatch_log_group" {
+  description = "CloudWatch log group for WAF logs (null if WAF disabled)"
+  value       = var.enable_waf ? aws_cloudwatch_log_group.waf_log_group[0].name : null
+}
+
+output "lambda_reserved_concurrency" {
+  description = "Reserved concurrent executions for Lambda"
+  value       = var.lambda_reserved_concurrency
+}
+
+output "api_throttle_settings" {
+  description = "API Gateway throttle settings"
+  value = {
+    burst_limit = var.api_throttle_burst_limit
+    rate_limit  = var.api_throttle_rate_limit
+  }
+}
+
+output "waf_rate_limits" {
+  description = "WAF rate limiting configuration"
+  value = {
+    general_limit = var.waf_rate_limit_general
+    post_limit    = var.waf_rate_limit_post
+  }
+}

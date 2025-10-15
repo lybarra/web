@@ -84,3 +84,60 @@ variable "web_domain" {
   type        = string
   default     = "example.com"
 }
+
+################################################################################
+# API Gateway Security Variables
+################################################################################
+variable "api_throttle_burst_limit" {
+  description = "Maximum concurrent requests allowed for API Gateway"
+  type        = number
+  default     = 10
+}
+
+variable "api_throttle_rate_limit" {
+  description = "Maximum requests per second allowed for API Gateway"
+  type        = number
+  default     = 5
+}
+
+################################################################################
+# Lambda Security Variables
+################################################################################
+variable "lambda_reserved_concurrency" {
+  description = "Reserved concurrent executions for Lambda to prevent runaway costs"
+  type        = number
+  default     = 5
+}
+
+################################################################################
+# WAF Security Variables
+################################################################################
+variable "enable_waf" {
+  description = "Enable AWS WAF protection for the API Gateway (additional cost ~$11/month)"
+  type        = bool
+  default     = false
+}
+
+variable "waf_rate_limit_general" {
+  description = "Maximum requests per IP in 5 minutes (general)"
+  type        = number
+  default     = 100
+}
+
+variable "waf_rate_limit_post" {
+  description = "Maximum POST requests per IP in 5 minutes"
+  type        = number
+  default     = 10
+}
+
+variable "waf_enable_geo_blocking" {
+  description = "Enable geographic blocking in WAF"
+  type        = bool
+  default     = false
+}
+
+variable "waf_allowed_countries" {
+  description = "List of country codes allowed when geo-blocking is enabled"
+  type        = list(string)
+  default     = ["US", "CA", "GB", "AR", "MX", "ES"]
+}
